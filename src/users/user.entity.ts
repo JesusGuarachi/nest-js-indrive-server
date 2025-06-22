@@ -5,8 +5,11 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BeforeInsert,
+    ManyToMany,
+    JoinTable,
   } from 'typeorm';
   import {hash} from "bcrypt"
+import { Rol } from 'src/roles/rol.entity';
   @Entity('users')
   export class User {
     @PrimaryGeneratedColumn()
@@ -50,4 +53,15 @@ import {
       async hashPassword(){
         this.password = await hash( this.password, Number(process.env.HASH_SALT))
       }
+      @JoinTable({
+        name: 'user_has_roles',
+        joinColumn: {
+          name: 'user_id'
+        },
+        inverseJoinColumn:{
+          name:'rol_id'
+        }
+      })
+      @ManyToMany(() =>Rol, (rol)=> rol.users)
+      roles: Rol[]
   }

@@ -1,34 +1,52 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterAuthDto } from './dto/register-auth-dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LoginAuthDto } from './dto/login-auth-dto';
 import {compare} from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { Rol } from 'src/roles/rol.entity';
 
 @Injectable()
 export class AuthService {
     constructor(
         private jwtService: JwtService,
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Rol) private rolesRepository: Repository<Rol>
 
 ){}
     async create(user: RegisterAuthDto){
         const emailExist = await this.userRepository.findOneBy({ email:user.email })
         const phoneExist = await this.userRepository.findOneBy({ phone:user.phone })
-
+       
         if(emailExist){
-            return new HttpException('This email is already in use.', HttpStatus.CONFLICT )
+            throw new HttpException('This email is already in use.', HttpStatus.CONFLICT )
         }
 
         if(phoneExist){
-            return new HttpException('This phone is already in use.', HttpStatus.CONFLICT )
+            throw new HttpException('This phone is already in use.', HttpStatus.CONFLICT )
         }
-        const newUser = await this.userRepository.create(user);
-        const userSave = await this.userRepository.save(newUser);
 
-        const payload = {id:userSave.id, name: userSave}
+        const newUser = await this.userRepository.create(user);
+       
+        let roles=[];
+        if(!user.rolesIds){
+          roles.push('CLIENT')
+        }
+        else{
+            roles = user.rolesIds;
+        }
+
+    
+         roles = await this.rolesRepository.findBy({
+            id: In(roles)
+        });
+        newUser.roles = roles;
+        const userSave = await this.userRepository.save(newUser);
+        const rolesId = userSave.roles.map(rol => rol.id);
+
+        const payload = {id:userSave.id, name: userSave, roles: rolesId}
         const token = this.jwtService.sign(payload);
         const data ={
             userSave,
@@ -38,22 +56,26 @@ export class AuthService {
         return data;
     }
     async login(loginData: LoginAuthDto){
-        const userFound = await this.userRepository.findOneBy({ email: loginData.email});
+        const userFound = await this.userRepository.findOne({
+            where: {email: loginData.email},
+            relations: ['roles']
+            });
         if(!userFound){
-            return new HttpException('This email is not exist', HttpStatus.NOT_FOUND )
+            throw new HttpException('This email is not exist', HttpStatus.NOT_FOUND )
         }
 
         const isPasswordValid = await compare(loginData.password, userFound.password);
 
         if(!isPasswordValid){
-            return new HttpException('Invalid emal or password', HttpStatus.FORBIDDEN )
+            throw new HttpException('Invalid emal or password', HttpStatus.FORBIDDEN )
         }
 
-        const payload = {id:userFound.id, name: userFound}
+        const rolesId = userFound.roles.map(rol => rol.id);
+        const payload = {id:userFound.id, name: userFound, roles: rolesId};
         const token = this.jwtService.sign(payload);
         const data ={
             userFound,
-            token
+            token,
         };
         delete data.userFound.password;
         return data;

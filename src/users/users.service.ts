@@ -5,6 +5,9 @@ import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { console } from 'inspector';
+import { join } from 'path';
+import { writeFile } from 'fs/promises';
+import { Rol } from 'src/roles/rol.entity';
 
 @Injectable()
 export class UsersService {
@@ -15,7 +18,7 @@ export class UsersService {
     }
 
     findAll(){
-        return this.userRepository.find();
+        return this.userRepository.find({relations: ['roles']});
     }
 
     update(id:number,user: UpdateUserDto){
@@ -34,4 +37,22 @@ export class UsersService {
          this.userRepository.update(id,updatedUser);
          return this.userRepository.findOneBy({id: id});
     }
+
+    async updateWithImage(id:number, file: Express.Multer.File){
+        const logger = new Logger('Bootstrap'); // nombre opcional
+
+        const userFound =  await this.userRepository.findOneBy({id: id});
+        if(!userFound){
+            return new HttpException('This user not exist', HttpStatus.NOT_FOUND);
+        
+        }
+        const filename = `${Date.now()}-${file.originalname}`;
+        const path = join(__dirname, '../../uploads', filename);
+        await writeFile(path, file.buffer);
+        userFound.image = path
+    
+         this.userRepository.update(id,userFound);
+         return this.userRepository.findOneBy({id: id});
+    }
+
 }

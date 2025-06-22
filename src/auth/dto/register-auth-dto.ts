@@ -28,4 +28,6 @@ export class RegisterAuthDto{
     @IsNotEmpty()
     @MinLength(6)
     password: string;
+
+    rolesIds: string[];
 }

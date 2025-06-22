@@ -4,8 +4,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './auth/jwt.constants';
+import { RolesModule } from './roles/roles.module';
 
 
 @Module({
@@ -21,6 +20,7 @@ import { jwtConstants } from './auth/jwt.constants';
       synchronize: true, // ⚠️ Solo en desarrollo
     }),
     AuthModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

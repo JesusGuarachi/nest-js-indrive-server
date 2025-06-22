@@ -9,9 +9,9 @@ async function bootstrap() {
   });
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       forbidNonWhitelisted: false,
-      transform: true,
+      transform: false,
     }),
   );
   await app.listen(3000,'192.168.1.5' );
