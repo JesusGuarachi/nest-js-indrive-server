@@ -26,7 +26,6 @@ export class RegisterAuthDto{
   
     @IsString()
     @IsNotEmpty()
-    @MinLength(6)
     password: string;
 
     rolesIds: string[];

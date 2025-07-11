@@ -13,8 +13,8 @@ import { RolesModule } from './roles/roles.module';
       type: 'mysql',
       host: '127.0.0.1',
       port: 3306,
-      username: 'root',
-      password: 'root',
+      username: 'reynaldo',
+      password: 'reynaldo',
       database: 'nest_indrave_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // ⚠️ Solo en desarrollo

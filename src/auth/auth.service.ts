@@ -74,10 +74,10 @@ export class AuthService {
         const payload = {id:userFound.id, name: userFound, roles: rolesId};
         const token = this.jwtService.sign(payload);
         const data ={
-            userFound,
+            user: userFound,
             token,
         };
-        delete data.userFound.password;
+        delete data.user.password;
         return data;
 
     }

@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { hostname } from 'os';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,{
+  const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'], // h
   });
   app.useGlobalPipes(
@@ -14,6 +13,6 @@ async function bootstrap() {
       transform: false,
     }),
   );
-  await app.listen(3000,'192.168.1.5' );
+  await app.listen(3000, '192.168.1.6');
 }
 bootstrap();
